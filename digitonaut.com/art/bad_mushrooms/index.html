@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+
+<!-- Mirrored from digitonaut.com/art/bad_mushrooms/ by HTTrack Website Copier/3.x [XR&CO'2014], Thu, 16 Feb 2023 07:41:00 GMT -->
+<!-- Added by HTTrack --><meta http-equiv="content-type" content="text/html;charset=UTF-8" /><!-- /Added by HTTrack -->
+<head>
+<meta charset='utf-8'\>
+<meta name='apple-mobile-web-app-capable' content='yes'><meta name='apple-mobile-web-app-status-bar-style' content='black-translucent'><title>Bad Mushrooms</title>
+
+<script src="shader-web-background.min.js"></script>
+<script type="x-shader/x-fragment" id="Image">
+precision highp float;
+uniform vec2  iResolution;
+uniform float iTime;
+
+// -------------------------------------------------------------------------------------------------- Shadertoy code
+#define rez iResolution
+#define time iTime/2.
+mat2 flap;
+const vec4 c=vec4(0.0,0.22,0.0,1.0); 
+float DE(in vec3 z0){
+ float d=10.,ds=1.;
+ vec4 z = vec4(z0.x-1.,z0.y-1.-abs(sin(time*.3)),z0.z-5.-time-sin(time+1.5),1.0); 
+ z.x=abs(z.x);
+ for(int i=0;i<3;i++){
+   z.xy=z.xy*flap;
+   d=min(d,max(abs(z.x-.5)-.5,max(abs(z.y)-0.1,abs(z.z)-.1+z.x*.125))/z.w);
+   z.x=abs(z.x-.75);z.z+=.15;
+ }
+ z0+=vec3(.025,.2,.025)*sin((z0.yzx+sin(z0.zxy*2.))*vec3(5.,1.,5.));
+ z0.z=mod(z0.z,10.)-5.;
+ z = vec4(z0,1.0); 
+ for (int n = 0; n < 20; n++) { //from kali I think
+  z.xz=clamp(z.xz, -1.0, 1.0) *2.0-z.xz; 
+  z/=min(dot(z.xyz,z.xyz),1.0); 
+  z+=c; 
+ }
+ return min(min(d*.15,z0.y+1.5),0.4*(length(z.xyz)-1.0)/z.w); 
+}
+ 
+void mainImage(out vec4 O, in vec2 U) {
+ vec2 uv=(2.0*U-rez.xy)/rez.y; 
+ vec3 ro=vec3(sin(time)*0.5+0.2,-0.75,time),rd=vec3(uv+.5+sin(time*vec2(.6,2.6))*.3,1.);
+ float a=0.3*sin(time+uv.x);
+ flap=mat2(cos(a),sin(a),-sin(a),cos(a))*1.3;
+ float t=0.,d,ps=1./rez.y;
+ for(int i=0;i<100;i++){
+   t+=d=DE(ro+t*rd);
+   if(t>20. || d<ps)break;
+ }
+ O=vec4(t/20.)*vec4(1.,.9,1.5-uv.y+0.3*sin(uv.y*100.)-uv.x*.25,1);
+}
+// -------------------------------------------------------------------------------------------------- End of Shadertoy code
+
+void main() {
+	mainImage(gl_FragColor, gl_FragCoord.xy);
+}
+</script>
+<script>
+shaderWebBackground.shade({
+	shaders: {
+		Image: {
+			uniforms: {
+				iResolution: (gl, loc, ctx) => gl.uniform2f(loc, ctx.width, ctx.height),
+				iTime: (gl, loc) => gl.uniform1f(loc, performance.now() / 1000)
+			}
+		}
+	}
+});
+</script>
+</head>
+<body>
+</body>
+
+<!-- Mirrored from digitonaut.com/art/bad_mushrooms/ by HTTrack Website Copier/3.x [XR&CO'2014], Thu, 16 Feb 2023 07:41:01 GMT -->
+</html>
